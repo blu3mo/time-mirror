@@ -62,6 +62,7 @@ function App() {
       </button>
       <h2>作業映像</h2>
       <video ref={recordedVideoRef} style={{"maxWidth": "50%"}} autoPlay controls></video>
+      <p>この映像はインターネットに配信されていないので、あなたしか見ることは出来ません。</p>
     </div>
   );
 }
