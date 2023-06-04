@@ -63,6 +63,7 @@ function App() {
       <h2>作業映像</h2>
       <video ref={recordedVideoRef} style={{"maxWidth": "50%"}} autoPlay controls></video>
       <p>この映像はインターネットに配信されていないので、あなたしか見ることは出来ません。</p>
+      <p>作業映像の再生位置を調整することで、n分前の自分の様子を見ることができます。</p>
     </div>
   );
 }
