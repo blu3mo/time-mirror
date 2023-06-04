@@ -36,21 +36,31 @@ function App() {
     setPlaying(false);
   };
 
+  const handlePiP = async () => {
+    if (recordedVideoRef.current.requestPictureInPicture) {
+      await recordedVideoRef.current.requestPictureInPicture();
+    }
+  };
+
   useInterval(() => {
     let blob = new Blob(recordedChunks, { type: 'video/webm' });
     let url = URL.createObjectURL(blob);
     let currentTime = recordedVideoRef.current.currentTime;
     recordedVideoRef.current.src = url;
     recordedVideoRef.current.currentTime = currentTime;
-  }, isPlaying ? 5000 : null);
+  }, isPlaying ? 1000 : null); // 10 minutes
 
   return (
     <div className="App">
-      <h1>Screen Recorder</h1>
+      <h1>未来の自分への作業配信 Broadcast to your future self</h1>
       <button onClick={recording ? handleStop : handleStart}>
         {recording ? 'Stop Recording' : 'Start Recording'}
       </button>
-      <h2>Playback</h2>
+      <br />
+      <button onClick={handlePiP} disabled={!recording}>
+        {'Picture-in-Picture Mode'}
+      </button>
+      <h2>作業映像</h2>
       <video ref={recordedVideoRef} style={{"maxWidth": "50%"}} autoPlay controls></video>
     </div>
   );
