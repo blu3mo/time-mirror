@@ -7,23 +7,33 @@ import { Analytics } from '@vercel/analytics/react';
 function App() {
   const [recordState, setRecordState] = useState({ recording: false, playing: false, chunks: [] });
   const recordedVideoRef = useRef();
+  const [pipActive, setPipActive] = useState(false); // add this state
   const liveVideoRef = useRef();
   const mediaRecorder = useRef(null);
 
   const handleStart = async () => {
-    const stream = await navigator.mediaDevices.getDisplayMedia({
-      video: {
-        cursor: 'always'
-      },
-      audio: false
-    });
-
-    liveVideoRef.current.srcObject = stream;
-    mediaRecorder.current = new MediaRecorder(stream);
-    mediaRecorder.current.ondataavailable = handleDataAvailable;
-    mediaRecorder.current.start(100); 
-    setRecordState({ ...recordState, recording: true, playing: true });
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          cursor: 'always'
+        },
+        audio: false
+      });
+      liveVideoRef.current.srcObject = stream;
+      mediaRecorder.current = new MediaRecorder(stream);
+      mediaRecorder.current.ondataavailable = handleDataAvailable;
+      mediaRecorder.current.start(100);
+      setRecordState({ ...recordState, recording: true, playing: true });
+    } catch (error) {
+      if (error.name === 'NotAllowedError') {
+        window.alert('画面共有の許可が必要です。');
+      } else {
+        // Log or handle any other errors here.
+        console.error(error);
+      }
+    }
   };
+
 
   const handleDataAvailable = (event) => {
     if (event.data && event.data.size > 0) {
@@ -40,7 +50,13 @@ function App() {
 
   const handlePiP = async () => {
     if (recordedVideoRef.current.requestPictureInPicture) {
-      await recordedVideoRef.current.requestPictureInPicture();
+      if (pipActive) {
+        document.exitPictureInPicture();
+        setPipActive(false);
+      } else {
+        await recordedVideoRef.current.requestPictureInPicture();
+        setPipActive(true);
+      }
     }
   };
 
@@ -54,21 +70,25 @@ function App() {
 
   return (
     <div className="App">
-      <img className="title-image" src={logo} alt="title" />
-      <div className="video-section">
-        <div className="video-container">
-          <video ref={liveVideoRef} className="video" autoPlay></video>
-          <button onClick={recordState.recording ? handleStop : handleStart} className="record-button">
-            {recordState.recording ? '配信を停止する' : '配信を開始する'}
-          </button>
-          <label className="video-label">今の自分</label>
-        </div>
-        <div className="video-container">
-          <video ref={recordedVideoRef} className="video" autoPlay controls></video>
-          <button onClick={handlePiP} disabled={!recordState.recording} className="pip-button">
-            {'オーバーレイで見る'}
-          </button>
-          <label className="video-label">過去の自分</label>
+      <div className="wrapper">
+        <img className="title-image" src={logo} alt="title" />
+        <div className="video-section">
+          <div className={`video-container ${!recordState.recording ? 'inactive' : ''}`}>
+            <video ref={liveVideoRef} className="video" autoPlay></video>
+            <button onClick={recordState.recording ? handleStop : handleStart} className="record-button">
+              {recordState.recording ? '■' : '配信を開始する'}
+            </button>
+            <label className="video-label">今の自分</label>
+          </div>
+          <div className={`video-container ${!recordState.playing ? 'inactive' : ''}`}>
+            <video ref={recordedVideoRef} className="video" autoPlay controls></video>
+            {
+              recordState.playing && (<button onClick={handlePiP} className="pip-button">
+                {pipActive ? 'オーバーレイを閉じる' : 'オーバーレイを表示'}
+              </button>)
+            }
+            <label className="video-label">過去の自分</label>
+          </div>
         </div>
       </div>
       <Analytics />
