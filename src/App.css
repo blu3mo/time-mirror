@@ -1,38 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap');
+
 .App {
+  font-family: 'M PLUS Rounded 1c', sans-serif;
   text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  height: 100vh;
+  padding-bottom: 50px;
+  box-sizing: border-box;
+  background-color: #141414;
+}
+
+.title-image {
+  width: 300px;
+  margin-bottom: 30px;
+}
+
+.video-section {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  gap: 20px;
+}
+
+.video-container {
+  position: relative;
+  width: 400px;
+}
+
+.video {
+  width: 400px;
+  height: 300px;
+  border-radius: 20px;
+}
+
+.video-container:nth-child(1) .video {
+  border: 2px solid #77BF6E;
+}
+
+.video-container:nth-child(2) .video {
+  border: 2px solid #4265CE;
+}
+
+.video-container:nth-child(1):not(.active) .video {
+  border-color: #3D8F37;
+}
+
+.video-container:nth-child(2):not(.active) .video {
+  border-color: #27467B;
+}
+
+.record-button {
+  position: absolute;
+  top: 35%;
+  left: 25%;
+  background-color: #4B86C5;
+  font-weight: 800;
+  font-size: 22px;
+  padding: 12px 24px;
+  border-radius: 30px;
+  border: none;
   color: white;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
 }
 
-.App-link {
-  color: #61dafb;
+.pip-button {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #4B86C5;
+  color: white;
+  border-radius: 50px;
+  padding: 8px 16px;
+  font-size: 15px;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+  font-weight: 800;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.video-label {
+  margin-top: 10px;
+  color: white;
+  font-weight: 800;
+  font-size: 1.5rem;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
 }

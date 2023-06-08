@@ -1,12 +1,13 @@
 import React, { useRef, useState } from 'react';
 import { useInterval } from 'usehooks-ts';
+import './App.css';
+import logo from './logo.png';
 
 function App() {
-  const [recording, setRecording] = useState(false);
-  const [recordedChunks, setRecordedChunks] = useState([]);
-  const [isPlaying, setPlaying] = useState(false);
+  const [recordState, setRecordState] = useState({ recording: false, playing: false, chunks: [] });
   const recordedVideoRef = useRef();
-  let mediaRecorder = useRef(null);
+  const liveVideoRef = useRef();
+  const mediaRecorder = useRef(null);
 
   const handleStart = async () => {
     const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -16,24 +17,24 @@ function App() {
       audio: false
     });
 
+    liveVideoRef.current.srcObject = stream;
     mediaRecorder.current = new MediaRecorder(stream);
     mediaRecorder.current.ondataavailable = handleDataAvailable;
-    mediaRecorder.current.start(100); // collect 100ms of data at a time
-    setRecording(true);
-    setPlaying(true);
+    mediaRecorder.current.start(100); 
+    setRecordState({ ...recordState, recording: true, playing: true });
   };
 
   const handleDataAvailable = (event) => {
     if (event.data && event.data.size > 0) {
-      setRecordedChunks((prev) => [...prev, event.data]);
+      setRecordState((prev) => ({ ...prev, chunks: [...prev.chunks, event.data] }));
     }
   };
 
   const handleStop = () => {
     mediaRecorder.current.stop();
     mediaRecorder.current.stream.getTracks().forEach((track) => track.stop());
-    setRecording(false);
-    setPlaying(false);
+    liveVideoRef.current.srcObject = null;
+    setRecordState({ ...recordState, recording: false, playing: false, chunks: [] });
   };
 
   const handlePiP = async () => {
@@ -43,27 +44,32 @@ function App() {
   };
 
   useInterval(() => {
-    let blob = new Blob(recordedChunks, { type: 'video/webm' });
+    let blob = new Blob(recordState.chunks, { type: 'video/webm' });
     let url = URL.createObjectURL(blob);
     let currentTime = recordedVideoRef.current.currentTime;
     recordedVideoRef.current.src = url;
     recordedVideoRef.current.currentTime = currentTime;
-  }, isPlaying ? 1000 : null); // 10 minutes
+  }, recordState.playing ? 1000 : null);
 
   return (
     <div className="App">
-      <h1>未来の自分への作業配信 Broadcast to your future self</h1>
-      <button onClick={recording ? handleStop : handleStart}>
-        {recording ? 'Stop Recording' : 'Start Recording'}
-      </button>
-      <br />
-      <button onClick={handlePiP} disabled={!recording}>
-        {'Picture-in-Picture Mode'}
-      </button>
-      <h2>作業映像</h2>
-      <video ref={recordedVideoRef} style={{"maxWidth": "50%"}} autoPlay controls></video>
-      <p>この映像はインターネットに配信されていないので、あなたしか見ることは出来ません。</p>
-      <p>作業映像の再生位置を調整することで、n分前の自分の様子を見ることができます。</p>
+      <img className="title-image" src={logo} alt="title" />
+      <div className="video-section">
+        <div className="video-container">
+          <video ref={liveVideoRef} className="video" autoPlay></video>
+          <button onClick={recordState.recording ? handleStop : handleStart} className="record-button">
+            {recordState.recording ? '配信を停止する' : '配信を開始する'}
+          </button>
+          <label className="video-label">今の自分</label>
+        </div>
+        <div className="video-container">
+          <video ref={recordedVideoRef} className="video" autoPlay controls></video>
+          <button onClick={handlePiP} disabled={!recordState.recording} className="pip-button">
+            {'オーバーレイで見る'}
+          </button>
+          <label className="video-label">10分前の自分</label>
+        </div>
+      </div>
     </div>
   );
 }
