@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { useInterval } from 'usehooks-ts';
 import './App.css';
 import logo from './logo.png';
+import { Analytics } from '@vercel/analytics/react';
 
 function App() {
   const [recordState, setRecordState] = useState({ recording: false, playing: false, chunks: [] });
