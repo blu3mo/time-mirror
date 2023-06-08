@@ -71,6 +71,7 @@ function App() {
           <label className="video-label">過去の自分</label>
         </div>
       </div>
+      <Analytics />
     </div>
   );
 }
