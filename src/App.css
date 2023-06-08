@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+1+Code:wght@700&display=swap');
 .App {
   font-family: 'M PLUS Rounded 1c', sans-serif;
   text-align: center;
@@ -106,10 +106,10 @@
 }
 
 .video-label {
-  line-height: 40px;
+  line-height: 35px;
   color: white;
   font-weight: 800;
-  font-size: 1.6rem;
+  font-size: 1.2rem;
   font-family: 'M PLUS Rounded 1c', sans-serif;
 }
 
@@ -118,4 +118,16 @@
   border: 1px solid #373737;
   padding: 50px 100px;
   border-radius: 10px;
+}
+
+.duration-input {
+  background-color: #000000;
+  border: 2px solid #373737;
+  border-radius: 10px;
+  color: white;
+  width: 70px;
+  height: 25px;
+  font-family: "M Plus 1 Code", monospace;
+  text-align: center;
+  font-size: 20px;
 }

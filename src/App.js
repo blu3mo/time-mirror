@@ -11,6 +11,9 @@ function App() {
   const liveVideoRef = useRef();
   const mediaRecorder = useRef(null);
 
+  // Add this state to manage the duration
+  const [duration, setDuration] = useState(10); // default value is 10
+
   const handleStart = async () => {
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -33,7 +36,6 @@ function App() {
       }
     }
   };
-
 
   const handleDataAvailable = (event) => {
     if (event.data && event.data.size > 0) {
@@ -68,6 +70,14 @@ function App() {
     recordedVideoRef.current.currentTime = currentTime;
   }, recordState.playing ? 1000 : null);
 
+  const handleDurationChange = (e) => {
+    const value = e.target.value;
+    if (value >= 0 && value <= recordedVideoRef.current.duration / 60) {
+      setDuration(value);
+      recordedVideoRef.current.currentTime = value * 60;
+    }
+  };
+
   return (
     <div className="App">
       <div className="wrapper">
@@ -87,7 +97,9 @@ function App() {
                 {pipActive ? 'オーバーレイを閉じる' : 'オーバーレイを表示'}
               </button>)
             }
-            <label className="video-label">過去の自分</label>
+            <label className="video-label">
+              <input type="number" value={duration} min="0" onChange={handleDurationChange} className='duration-input'/> 分前の自分
+            </label>
           </div>
         </div>
       </div>
