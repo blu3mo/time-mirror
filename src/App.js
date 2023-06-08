@@ -67,7 +67,7 @@ function App() {
           <button onClick={handlePiP} disabled={!recordState.recording} className="pip-button">
             {'オーバーレイで見る'}
           </button>
-          <label className="video-label">10分前の自分</label>
+          <label className="video-label">過去の自分</label>
         </div>
       </div>
     </div>
