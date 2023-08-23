@@ -1,7 +1,8 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useInterval } from 'usehooks-ts';
 import './App.css';
-import logo from './logo.png';
+import logo from './images/logo.png';
+import clockIcon from './images/clock_icon.png';
 import { Analytics } from '@vercel/analytics/react';
 
 function App() {
@@ -13,6 +14,21 @@ function App() {
 
   // Add this state to manage the duration
   const [duration, setDuration] = useState(10); // default value is 10
+
+  useEffect(() => {
+    if (recordedVideoRef.current) {
+      const handleEnterPictureInPicture = () => setPipActive(true);
+      const handleLeavePictureInPicture = () => setPipActive(false);
+
+      recordedVideoRef.current.addEventListener('enterpictureinpicture', handleEnterPictureInPicture);
+      recordedVideoRef.current.addEventListener('leavepictureinpicture', handleLeavePictureInPicture);
+
+      return () => {
+        recordedVideoRef.current.removeEventListener('enterpictureinpicture', handleEnterPictureInPicture);
+        recordedVideoRef.current.removeEventListener('leavepictureinpicture', handleLeavePictureInPicture);
+      };
+    }
+  }, []);
 
   const handleStart = async () => {
     try {
@@ -56,51 +72,88 @@ function App() {
         document.exitPictureInPicture();
         setPipActive(false);
       } else {
-        await recordedVideoRef.current.requestPictureInPicture();
-        setPipActive(true);
+        if (recordedVideoRef.current.readyState >= 1) {  // Checks if metadata is loaded
+          await recordedVideoRef.current.requestPictureInPicture();
+          setPipActive(true);
+        } else {
+          alert("映像が読み込まれるまでオーバーレイ表示は出来ません。");
+        }
       }
     }
   };
 
+  const playbackPoint = () => {
+    //console.log(recordedVideoRef.current.duration);
+    //console.log(duration * 60);
+    return 0;
+  }
+
   useInterval(() => {
     let blob = new Blob(recordState.chunks, { type: 'video/webm' });
     let url = URL.createObjectURL(blob);
-    let currentTime = recordedVideoRef.current.currentTime;
     recordedVideoRef.current.src = url;
-    recordedVideoRef.current.currentTime = currentTime;
+    if (playbackPoint() > 0) {
+      recordedVideoRef.current.currentTime = playbackPoint();
+    } else {
+      recordedVideoRef.current.currentTime = 0;
+    }
+    console.log(playbackPoint())
   }, recordState.playing ? 1000 : null);
 
   const handleDurationChange = (e) => {
     const value = e.target.value;
     if (value >= 0 && value <= recordedVideoRef.current.duration / 60) {
       setDuration(value);
-      recordedVideoRef.current.currentTime = value * 60;
     }
   };
 
   return (
     <div className="App">
-      <div className="wrapper">
-        <img className="title-image" src={logo} alt="title" />
-        <div className="video-section">
-          <div className={`video-container ${!recordState.recording ? 'inactive' : ''}`}>
-            <video ref={liveVideoRef} className="video" autoPlay></video>
-            <button onClick={recordState.recording ? handleStop : handleStart} className="record-button">
-              {recordState.recording ? '■' : '配信を開始する'}
-            </button>
-            <label className="video-label">今の自分</label>
-          </div>
-          <div className={`video-container ${!recordState.playing ? 'inactive' : ''}`}>
-            <video ref={recordedVideoRef} className="video" autoPlay controls></video>
-            {
-              recordState.playing && (<button onClick={handlePiP} className="pip-button">
-                {pipActive ? 'オーバーレイを閉じる' : 'オーバーレイを表示'}
-              </button>)
-            }
-            <label className="video-label">
-              <input type="number" value={duration} min="0" onChange={handleDurationChange} className='duration-input'/> 分前の自分
-            </label>
-          </div>
+      <div className='title-section'>
+        <img className="title-image" src={logo} alt="タイムサボリモニター" />
+        <img className='clock-icon clock-icon-1' src={clockIcon} />
+        <img className='clock-icon clock-icon-2' src={clockIcon} />
+        <img className='clock-icon clock-icon-3' src={clockIcon} />
+        <img className='clock-icon clock-icon-4' src={clockIcon} />
+      </div>
+      <div className="description-section">
+        <div className='description-large'>
+          <p>過去のあなたがサボってないか</p>
+          <p>よく監視しましょう</p>
+        </div>
+        <div className='description-small'>
+        <p>タイムサボりモニターは、過去のあなたの画面を</p>
+        <p>今のあなたに配信することで、あなたの作業を応援するサービスです。</p>
+        </div>
+      </div>
+      <div className="video-section">
+        <div className={`video-container ${!recordState.playing ? 'inactive' : ''}`}>
+          <label className="video-label">
+            <input type="number" value={duration} min="0" onChange={handleDurationChange} className='duration-input' /> 分前の自分
+          </label>
+          <video ref={recordedVideoRef} className="video" autoPlay controls></video>
+          {
+            recordState.playing &&
+            (<button onClick={handlePiP} className="pip-button">
+              {pipActive ? 'オーバーレイを閉じる' : 'オーバーレイを表示'}
+            </button>)
+          }
+          {
+            (playbackPoint() < 0) && (
+              <div className="overlay">
+                <div className="overlay-text">
+                  配信開始まで{-1 * playbackPoint()}分
+                </div>
+              </div>
+            )
+          }
+        </div>
+        <div className={`video-container ${!recordState.recording ? 'inactive' : ''}`}>
+          <label className="video-label">今のあなた</label>
+          <video ref={liveVideoRef} className="video" autoPlay></video>
+          <button onClick={recordState.recording ? handleStop : handleStart} className="record-button">
+            {recordState.recording ? '停止' : 'モニターを開始する'}
+          </button>
         </div>
       </div>
       <Analytics />
