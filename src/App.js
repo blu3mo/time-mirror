@@ -13,7 +13,7 @@ function App() {
   const mediaRecorder = useRef(null);
 
   // Add this state to manage the duration
-  const [duration, setDuration] = useState(10); // default value is 10
+  const [delayDuration, setDelayDuration] = useState(300); // default value is 300 seconds
 
   useEffect(() => {
     if (recordedVideoRef.current) {
@@ -83,27 +83,32 @@ function App() {
   };
 
   const playbackPoint = () => {
-    //console.log(recordedVideoRef.current.duration);
-    //console.log(duration * 60);
-    return 0;
+    if (recordedVideoRef.current === undefined) return 0;
+    const currentRecordingDuration = recordedVideoRef.current.duration;
+    console.log(currentRecordingDuration);
+    return currentRecordingDuration - delayDuration;
   }
 
   useInterval(() => {
+    const currentTime = recordedVideoRef.current.currentTime;
+    console.log(recordedVideoRef.current.currentTime);
     let blob = new Blob(recordState.chunks, { type: 'video/webm' });
     let url = URL.createObjectURL(blob);
     recordedVideoRef.current.src = url;
-    if (playbackPoint() > 0) {
-      recordedVideoRef.current.currentTime = playbackPoint();
-    } else {
-      recordedVideoRef.current.currentTime = 0;
-    }
-    console.log(playbackPoint())
-  }, recordState.playing ? 1000 : null);
+    recordedVideoRef.current.currentTime = currentTime;
+    // if (playbackPoint() > 0) {
+    //   recordedVideoRef.current.currentTime = playbackPoint();
+    // } else {
+    //   recordedVideoRef.current.currentTime = 0;
+    // }
+    // console.log(playbackPoint())
+
+  }, recordState.playing ? 5000 : null);
 
   const handleDurationChange = (e) => {
     const value = e.target.value;
     if (value >= 0 && value <= recordedVideoRef.current.duration / 60) {
-      setDuration(value);
+      setDelayDuration(value);
     }
   };
 
@@ -129,7 +134,7 @@ function App() {
       <div className="video-section">
         <div className={`video-container ${!recordState.playing ? 'inactive' : ''}`}>
           <label className="video-label">
-            <input type="number" value={duration} min="0" onChange={handleDurationChange} className='duration-input' /> 分前の自分
+            5分前のあなた
           </label>
           <video ref={recordedVideoRef} className="video" autoPlay controls></video>
           {
@@ -139,13 +144,13 @@ function App() {
             </button>)
           }
           {
-            (playbackPoint() < 0) && (
-              <div className="overlay">
-                <div className="overlay-text">
-                  配信開始まで{-1 * playbackPoint()}分
-                </div>
-              </div>
-            )
+            // (playbackPoint() < 0) && (
+            //   <div className="overlay">
+            //     <div className="overlay-text">
+            //       配信開始まであと{-1}分
+            //     </div>
+            //   </div>
+            // )
           }
         </div>
         <div className={`video-container ${!recordState.recording ? 'inactive' : ''}`}>
